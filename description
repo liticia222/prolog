@@ -1,0 +1,163 @@
+ 
+Le langage Prolog est un langage de programmation logique qui repose sur la logique formelle et est principalement utilisé dans le domaine de l'intelligence artificielle. Il est déclaratif, ce qui signifie que le programme est un ensemble de faits et de règles qui définissent des relations, et une computation est initiée en exécutant une requête sur le programme. Voici des réponses aux différentes questions posées :
+
+1. **Définition du prédicat cherche/2 :** Le prédicat cherche/2 peut être défini en Prolog pour vérifier si une chaîne de caractères est présente dans le dictionnaire donné. Cela peut être réalisé en utilisant le prédicat string_chars/2 pour convertir la chaîne en une liste de caractères, puis en vérifiant la présence de cette liste dans le dictionnaire.
+
+2. **Définition du prédicat tous_les_mots/2 :** Le prédicat tous_les_mots/2 peut être défini pour générer la liste de tous les mots présents dans le dictionnaire. Cela peut être réalisé en parcourant l'arbre du dictionnaire et en construisant la liste des mots au fur et à mesure.
+
+3. **Définition du prédicat inserer/3 :** Le prédicat inserer/3 peut être défini pour insérer une chaîne de caractères dans le dictionnaire. Cela implique de parcourir le dictionnaire en fonction de la chaîne à insérer et de la modifier en conséquence.
+
+4. **Définition du prédicat supprimer_v1/3 :** Le prédicat supprimer_v1/3 peut être défini pour supprimer une chaîne de caractères du dictionnaire en modifiant simplement les étiquettes booléennes. Cela implique de parcourir le dictionnaire, de trouver la chaîne à supprimer et de modifier les étiquettes au besoin.
+
+5. **Définition du prédicat supprimer_v2/3 :** Le prédicat supprimer_v2/3 peut être défini pour supprimer une chaîne de caractères du dictionnaire en éliminant les nœuds qui ne permettent plus de former des mots. Cela implique un parcours similaire au prédicat supprimer_v1/3, mais avec une logique supplémentaire pour éliminer les nœuds inutiles.
+
+6. **Définition du prédicat coq_a_l_ane/4 :** Le prédicat coq_a_l_ane/4 peut être défini pour trouver une séquence de transformations entre deux chaînes, en changeant une lettre à la fois, de telle sorte que tous les mots intermédiaires appartiennent également au dictionnaire. Cela peut être réalisé en utilisant un algorithme de recherche comme la profondeur d'abord.
+
+En résumé, toutes ces opérations peuvent être mises en œuvre en Prolog en utilisant des techniques de parcours d'arbres et de manipulation de listes, conformément aux spécifications données.
+
+Citations:
+[1] http://www.swi-prolog.org/pldoc/man?predicate=string_chars%2F2
+[2] https://en.wikipedia.org/wiki/Prolog
+[3] https://www.geeksforgeeks.org/prolog-an-introduction/
+[4] https://www.tutorialspoint.com/prolog/prolog_introduction.htm
+[5] https://www.reddit.com/r/prolog/
+
+
+
+///* question 1 
+cherche(Mot, dic('*', _, Dicos)) :- string_chars(Mot, Chars), cherche_mot(Chars, Dicos). 
+
+
+?- un_dico(Dico), cherche("an", Dico).
+Dico = dic(*,false,[dic(a,true,[dic(n,true,[])]),dic(b,false,[dic(a
+
+////////////////////chat gpt 
+%% 1. Définir le prédicat cherche/2 qui est tel que cherche(Mot, Dico) est vrai si la chaîne de caractères Mot est dans le dictionnaire Dico.
+cherche(Mot, dic('*', _, Dicos)) :- string_chars(Mot, Chars), cherche_mot(Chars, Dicos).
+
+cherche_mot([], _).
+cherche_mot([Char|Chars], Dicos) :- member(dic(Char, true, Dicos1), Dicos), cherche_mot(Chars, Dicos1).
+
+%% 2. Définir le prédicat tous_les_mots/2 qui est tel que tous_les_mots(Dico, Liste_Mots) est vrai si la liste Liste_Mots est la liste de tous les mots du dictionnaire.
+tous_les_mots(Dico, Liste_Mots) :- tous_les_mots(Dico, [], Liste_Mots).
+
+tous_les_mots(dic('*', _, Dicos), Acc, Liste_Mots) :- tous_les_mots(Dicos, Acc, Liste_Mots).
+tous_les_mots([], Liste_Mots, Liste_Mots).
+tous_les_mots([dic(Char, true, Dicos)|Reste], Acc, Liste_Mots) :- append(Acc, [Char], Acc1), tous_les_mots(Dicos, Acc1, Liste_Mots1), tous_les_mots(Reste, Liste_Mots1, Liste_Mots).
+tous_les_mots([dic(_, false, _)|Reste], Acc, Liste_Mots) :- tous_les_mots(Reste, Acc, Liste_Mots).
+
+%% 3. Définir le prédicat inserer/3 qui est tel que inserer(String, Dico, Dico_) est vrai si le dictionnaire Dico_ est le résultat de l'insertion de la chaîne de caractères String dans le dictionnaire Dico.
+inserer(String, Dico, Dico_) :- string_chars(String, Chars), inserer_mot(Chars, Dico, Dico_).
+
+inserer_mot([], dic('*', _, Dicos), dic('*', _, Dicos)).
+inserer_mot([Char|Chars], dic(Char, false, Dicos), dic(Char, true, Dicos1)) :- inserer_mot(Chars, Dicos, Dicos1).
+inserer_mot([Char|Chars], dic(Char, true, Dicos), dic(Char, true, Dicos1)) :- inserer_mot(Chars, Dicos, Dicos1).
+inserer_mot([Char|Chars], dic(Char1, Bool, Dicos), dic(Char1, Bool, Dicos1)) :- Char \= Char1, inserer_mot([Char|Chars], Dicos, Dicos1).
+
+%% 4. Définir le prédicat supprimer_v1/3 qui est tel que supprimer_v1(String, Dico, Dico_) est vrai si le dictionnaire Dico_ est le résultat de la suppression de la chaîne de caractère String dans le dictionnaire Dico simplement en modifiant les étiquettes booléennes.
+supprimer_v1(String, Dico, Dico_) :- string_chars(String, Chars), supprimer_mot(Chars, Dico, Dico_).
+
+supprimer_mot([], Dico, Dico).
+supprimer_mot([Char|Chars], dic(Char, true, Dicos), dic(Char, false, Dicos1)) :- supprimer_mot(Chars, Dicos, Dicos1).
+supprimer_mot([Char|Chars], dic(Char, false, Dicos), dic(Char, false, Dicos1)) :- supprimer_mot(Chars, Dicos, Dicos1).
+supprimer_mot([Char|Chars], dic(Char1, Bool, Dicos), dic(Char1, Bool, Dicos1)) :- Char \= Char1, supprimer_mot([Char|Chars], Dicos, Dicos1).
+
+%% 5. Définir le prédicat supprimer_v2/3 qui est tel que supprimer_v2(String, Dico, Dico_) est vrai si le dictionnaire Dico_ est le résultat de la suppression de la chaîne de caractère String dans le dictionnaire Dico en éliminant les noeuds qui ne permettent plus de former des mots.
+supprimer_v2(String, Dico, Dico_) :- string_chars(String, Chars), supprimer_mot_v2(Chars, Dico, Dico_).
+
+supprimer_mot_v2([], Dico, Dico).
+supprimer_mot_v2([Char|Chars], dic(Char, true, Dicos), dic(Char, true, Dicos1)) :- supprimer_mot_v2(Chars, Dicos, Dicos1).
+supprimer_mot_v2([Char|Chars], dic(Char, false, Dicos), dic(Char, false, Dicos1)) :- supprimer_mot_v2(Chars, Dicos, Dicos1).
+supprimer_mot_v2([Char|Chars], dic(Char1, Bool, Dicos), dic(Char1, Bool, Dicos1)) :- Char \= Char1, supprimer_mot_v2([Char|Chars], Dicos, Dicos1).
+
+%% 6. Définir le prédicat coq_a_l_ane/4 qui est tel que coq_a_l_ane(String1, String2, Dico, Sequence) permet de passer de la chaîne de départ String1 à une chaîne de caractère String2 (qui appartiennent tous deux au dictionnaire) en changeant une lettre à la fois, de telle sorte que tous les mots intermédiaires formant Sequence appartiennent aussi au dictionnaire.
+coq_a_l_ane(String1, String2, Dico, Sequence) :- string_chars(String1, Chars1), string_chars(String2, Chars2), coq_a_l_ane(Chars1, Chars2, Dico, [], Sequence).
+
+coq_a_l_ane([], [], _, Sequence, Sequence).
+coq_a_l_ane([Char1|Chars1], [Char2|Chars2], Dico, Acc, Sequence) :- Char1 \= Char2, member(dic(Char2, _, Dicos), Dico), member(dic(Char1, _, Dicos1), Dicos), append(Acc, [Char1], Acc1), coq_a_l_ane(Chars1, [Char2|Chars2], Dicos1, Acc1, Sequence).
+coq_a_l_ane([Char1|Chars1], [Char2|Chars2], Dico, Acc, Sequence) :- Char1 = Char2, append(Acc, [Char1], Acc1), coq_a_l_ane(Chars1, Chars2, Dico, Acc1, Sequence).
+
+
+//////////////////////////v2
+%% Un dictionnaire est un arbre de constructeur (ie. symbole de fonction) dic/3 de premier argument, un caractère, de deuxième argument, un booléen qui indique si le chemin depuis la racine est un mot du dictionnaire ou non, et un troisième argument, une liste de dictionnaires. 
+%% Par exemple, le dictionnaire ci-dessous représente l'ensemble de mots «a», «an», «bac» et «bar».
+%% Les mots sont lus depuis la racine jusqu'au noeuds étiquetés par un booléen true. Les noeuds étiquetés par un booléen false ne peuvent pas terminer un mot. Par exemple, «b» et «ba» ne sont pas des mots dans l'arbre. Par convention, la racine de l'arbre sera toujours étiquetée par le caractère '*'.
+
+un_dico(dic('*', false, [
+		dic('a', true, [
+			dic('n', true, [])]),
+		dic('b', false, [
+			dic('a', false, [
+				dic('c', true, []),
+				dic('r', true, [])])]),
+		dic('c', true, [])])).
+
+%% 1. Définir le prédicat cherche/2 qui est tel que cherche(Mot, Dico) est vrai si la chaîne de caractères Mot est dans le dictionnaire Dico.
+%% On utilisera le prédicat string_chars/2 qui est tel que string_chars(String, Chars) est vrai si Chars est la liste des caractères de la chaîne de caractères String (http://www.swi-prolog.org/pldoc/man?predicate=string_chars/2).
+
+cherche(Mot, Dico) :-
+    string_chars(Mot, Chars),
+    cherche_chars(Chars, Dico).
+
+cherche_chars([], _).
+cherche_chars([Char|Chars], dic(Char, true, _)) :-
+    cherche_chars(Chars, _).
+cherche_chars([Char|Chars], dic(Char, false, Dicos)) :-
+    member(dic(_, _, Dicos), Dicos),
+    cherche_chars(Chars, _).
+
+%% 2. Définir le prédicat tous_les_mots/2 qui est tel que tous_les_mots(Dico, Liste_Mots) est vrai si la liste Liste_Mots est la liste de tous les mots du dictionnaire.
+
+tous_les_mots(Dico, Liste_Mots) :-
+    tous_les_mots(Dico, [], Liste_Mots).
+
+tous_les_mots(dic(_, true, _), Liste_Mots, Liste_Mots).
+tous_les_mots(dic(_, false, Dicos), Liste_Mots, Liste_Mots_Finale) :-
+    member(dic(_, _, Dicos), Dicos),
+    tous_les_mots(Dicos, Liste_Mots, Liste_Mots_Finale).
+
+%% 3. Définir le prédicat inserer/3 qui est tel que inserer(String, Dico, Dico_) est vrai si le dictionnaire Dico_ est le résultat de l'insertion de la chaîne de caractères String dans le dictionnaire Dico.
+
+inserer(String, Dico, Dico_) :-
+    string_chars(String, Chars),
+    inserer_chars(Chars, Dico, Dico_).
+
+inserer_chars([], Dico, Dico).
+inserer_chars([Char|Chars], dic(Char, true, Dicos), dic(Char, true, Dicos_)) :-
+    inserer_chars(Chars, Dicos, Dicos_).
+inserer_chars([Char|Chars], dic(Char, false, Dicos), dic(Char, false, Dicos_)) :-
+    inserer_chars(Chars, Dicos, Dicos_).
+inserer_chars([Char|Chars], dic(Char, false, Dicos), dic(Char, false, [dic(Char, true, [])|Dicos_])) :-
+    inserer_chars(Chars, Dicos, Dicos_).
+
+%% 4. Définir le prédicat supprimer_v1/3 qui est tel que supprimer_v1(String, Dico, Dico_) est vrai si le dictionnaire Dico_ est le résultat de la suppression de la chaîne de caractère String dans le dictionnaire Dico simplement en modifiant les étiquettes booléennes.
+
+supprimer_v1(String, Dico, Dico_) :-
+    string_chars(String, Chars),
+    supprimer_v1_chars(Chars, Dico, Dico_).
+
+supprimer_v1_chars([], Dico, Dico).
+supprimer_v1_chars([Char|Chars], dic(Char, true, Dicos), dic(Char, false, Dicos_)) :-
+    supprimer_v1_chars(Chars, Dicos, Dicos_).
+supprimer_v1_chars([Char|Chars], dic(Char, false, Dicos), dic(Char, false, Dicos_)) :-
+    supprimer_v1_chars(Chars, Dicos, Dicos_).
+
+%% 5. Définir le prédicat supprimer_v2/3 qui est tel que supprimer_v2(String, Dico, Dico_) est vrai si le dictionnaire Dico_ est le résultat de la suppression de la chaîne de caractère String dans le dictionnaire Dico en éliminant les noeuds qui ne permettent plus de former des mots.
+
+supprimer_v2(String, Dico, Dico_) :-
+    string_chars(String, Chars),
+    supprimer_v2_chars(Chars, Dico, Dico_).
+
+supprimer_v2_chars([], Dico, Dico).
+supprimer_v2_chars([Char|Chars], dic(Char, true, Dicos), dic(Char, false, Dicos_)) :-
+    supprimer_v2_chars(Chars, Dicos, Dicos_).
+supprimer_v2_chars([Char|Chars], dic(Char, false, Dicos), dic(Char, false, Dicos_)) :-
+    supprimer_v2_chars(Chars, Dicos, Dicos_).
+supprimer_v2_chars([Char|Chars], dic(Char, false, Dicos), dic(Char, false, Dicos_)) :-
+    supprimer_v2_chars(Chars, Dicos, Dicos_).
+
+%% 6. Définir le prédicat coq_a_l_ane/4 qui est tel que coq_a_l_ane(String1, String2, Dico, Sequence) permet de passer de la chaîne de départ String1 à une chaîne de caractère String2 (qui appartiennent tous deux au dictionnaire) en changeant une lettre à la fois, de telle sorte que tous les mots intermédiaires formant Sequence appartiennent aussi au dictionnaire.
+
+coq_a_l_ane(String1, String2, Dico, Sequence) :-
+    string_chars(String1, Chars1),
+    string_chars(String2, Chars2),
